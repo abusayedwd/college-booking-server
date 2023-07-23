@@ -1,6 +1,6 @@
 const express = require('express')
 const  cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const { request } = require('express');
 const app = express();
@@ -29,13 +29,39 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const collegecollection = client.db('collegDB').collection('allcollege');
+    const informationcollection = client.db('collegDB').collection('addinfo');
+
+
+    app.post('/addinfo',async(req,res)=>{
+        const userInfo = req.body;
+        console.log(userInfo)
+        const result = await informationcollection.insertOne(userInfo);
+        res.send(result);
+      });
+
+       app.get('/addinfo', async (req, res) => {
+        const userdata = informationcollection.find();
+        const result = await userdata.toArray()
+        res.send(result)
+       })
 
     app.get('/allcollege', async (req, res) => {
-        const cursor =  collegecollection.find();
+            const search = req.query.search;
+            console.log(search)
+            const query = {
+                college_name: { $regex: `${search}`, $options: 'i'}}
+            const cursor =  collegecollection.find( query);
         const result = await cursor.toArray();
         res.send(result);
     })
+     
 
+    app.get('/allcollege/:id', async(req,res) => {
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)}
+        const result = await collegecollection.findOne(query)
+        res.send(result)
+})
 
 
 
