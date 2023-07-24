@@ -39,11 +39,47 @@ async function run() {
         res.send(result);
       });
 
-       app.get('/addinfo', async (req, res) => {
-        const userdata = informationcollection.find();
-        const result = await userdata.toArray()
+       app.get('/addinfo', async (req, res) => { 
+        console.log(req.query.email)
+        let query = {};
+        if(req.query?.email){
+                query = {email : req.query.email}
+        }
+        const result = await informationcollection.find(query).toArray()
         res.send(result)
-       })
+       }); 
+
+       app.delete('/addinfo/:id', async(req,res) => {
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)}
+        const result = await  informationcollection.deleteOne(query)
+        res.send(result)
+})
+
+app.get('/addinfo/:id', async(req,res) => {
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)}
+        const result = await informationcollection.findOne(query)
+        res.send(result)
+})
+
+
+app.put('/addinfo/:id', async(req,res) => {
+        const id = req.params.id;
+        const filter = {_id: new ObjectId(id)}
+        const updateinfo = req.body;
+        const info = {
+                $set: {
+                        candidatename:updateinfo.candidatename,
+                        phone:updateinfo.phone,
+                        dateofbirth:updateinfo.dateofbirth,
+                        subject:updateinfo.subject,
+                }
+        }
+       const result = await  informationcollection.updateOne(filter, info,)
+       res.send(result)
+})
+       
 
     app.get('/allcollege', async (req, res) => {
             const search = req.query.search;
